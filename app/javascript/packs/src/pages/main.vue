@@ -1,63 +1,43 @@
 <template>
   <div id="main">
     <v-app id="inspire" dark>
-      <!-- navigation bar  -->
-      <v-navigation-drawer
-        v-model="drawer"
-        :mini-variant.sync="mini"
-        hide-overlay
-        clipped
-        fixed
-        app
-      >
-        <v-toolbar flat class="transparent">
-          <v-list class="pa-0">
-            <v-list-tile avatar>
-              <v-list-tile-avatar>
-                <img
-                  src="https://pbs.twimg.com/profile_images/1107052141615579136/AXi3WAml_400x400.jpg"
-                >
-              </v-list-tile-avatar>
-
-              <v-list-tile-content>
-                <v-list-tile-title>Gen</v-list-tile-title>
-              </v-list-tile-content>
-
-              <v-list-tile-action>
-                <v-btn icon @click.stop="mini = !mini">
-                  <v-icon>chevron_left</v-icon>
-                </v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </v-list>
-        </v-toolbar>
-
-        <v-list class="pt-0" dense>
-          <v-divider></v-divider>
-
-          <v-list-tile v-for="item in items" :key="item.title" @click>
-            <v-list-tile-action>
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content @click="sendUrl(item.url)">
-                <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-        </v-list>
-      </v-navigation-drawer>
-
       <!-- top toolbar  -->
       <v-toolbar app fixed clipped-left>
         <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
         <v-toolbar-title>Gen-Blog</v-toolbar-title>
+        <v-toolbar-items class="hidden-sm-and-down" v-for="menu in menus">
+          <v-btn flat>{{ menu }}</v-btn>
+        </v-toolbar-items>
+
+        <v-spacer></v-spacer>
+
+        <v-autocomplete
+          v-model="select"
+          :loading="loading"
+          :items="items"
+          append-icon="search"
+          :search-input.sync="search"
+          cache-items
+          flat
+          hide-no-data
+          hide-details
+          label="search?"
+          solo-inverted
+        ></v-autocomplete>
       </v-toolbar>
 
       <!-- main content -->
       <v-content>
         <v-container fluid>
-          <v-layout>
-            <v-flex>
+          <v-layout justify-space-around  >
+            <v-flex xs2>
+              <Menu></Menu>
+            </v-flex>
+            <v-flex xs6>
               <router-view/>
+            </v-flex>
+            <v-flex xs3>
+              <Profile></Profile>
             </v-flex>
           </v-layout>
         </v-container>
@@ -72,27 +52,42 @@
 </template>
 
 <script>
+import Menu from "../components/menu.vue";
+import Profile from "../components/profile.vue";
 export default {
+  components: {
+    Menu: Menu,
+    Profile: Profile,
+   },
   data() {
     return {
-      drawer: true,
-      items: [
-        { title: "Home", icon: "home", url: "/" },
-        {
-          title: "Event",
-          icon: "event",
-          url: "https://calendar.google.com/calendar/r?tab=wc"
-        },
-        { title: "Tool", icon: "fas fa-list", url: "/tool" }
-      ],
-      mini: false,
-      right: null
+      loading: false,
+      search: null,
+      select: null,
+      menus: ["tool"],
+      items: [],
+      states: ["Alabama", "Alaska", "American Samoa"]
     };
   },
-  methos: {
-    sendUrl(url) {
-      console.log(url)
+  watch: {
+    search(val) {
+      val && val !== this.select && this.querySelections(val);
+    }
+  },
+  methods: {
+    querySelections(v) {
+      this.loading = true;
+      // Simulated ajax query
+      setTimeout(() => {
+        this.items = this.states.filter(e => {
+          return (e || "").toLowerCase().indexOf((v || "").toLowerCase()) > -1;
+        });
+        this.loading = false;
+      }, 500);
     }
   }
 };
 </script>
+<style lang="sass" scoped>
+</style>
+
